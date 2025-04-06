@@ -1,476 +1,349 @@
 name = "Hive Winstreak Counter Reworked"
-description = "Winstreak counter for The Hive Reworked and Updated"
+ description = "Winstreak counter for The Hive Reworked and Updated"
+ 
+ --[[
+     Winstreak Counter module by Quoty0
+     Rework and rescript by Namenu
+     A part of the script is from " Hive Auto Queue" Made by Rosie ( Thx to her ) 
+ ]]
+ 
+ local font = gui.font()
+ ImportedLib = importLib("fileUtility.lua")
+ 
+ positionX = 558
+ positionY = 316
+ sizeX = 80
+ sizeY = 15
+ scale = 1
+ 
+ local file = io.open("WinStreak.txt")
+ 
+ if file then
+     winstreak = "Gamemode Not Selected"
+     gm = "Null"
+     team = "Null"
+     dead = "?"
+ 	file:close()
+ else
+ 	local file = io.open("WinStreak.txt", "w")
+ 	file:write("0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0")
+ 	file:close()
+     winstreak = 0
+     gm = "Null"
+     team = "Null"
+     dead = "?"
+ end
+ xboxname = player.name()
+ client.settings.addAir(10)
+ textcolor = client.settings.addNamelessColor("Text Color", { 255, 255, 255, 255 })
+ bgcolor = client.settings.addNamelessColor("Background Color", { 0, 0, 0, 128 })
+ client.settings.addAir(10)
+ xoffset = 0
+ client.settings.addInt("Text X offset", "xoffset", -5, 5)
+ yoffset = 0
+ client.settings.addInt("Text Y offset", "yoffset", -5, 5)
+ client.settings.addAir(30)
+ cmdinfo =
+ "Command List\nsetstreak <arg> - set your winstreak to <arg>\naddstreak add 1 to the current winstreak"
+ client.settings.addInfo("cmdinfo")
+ client.settings.addAir(10)
+ addstreakinfo = "You can use .setstreak to set your streak number to the current gamemode you're in \nYou can use .addstreak to add 1 to you current winstreak\n(need to be in a game lobby else it will not work or edit the wrong one)"
+ client.settings.addInfo("addstreakinfo")
 
---[[
-    Winstreak Counter module by Quoty0
-    Rework and rescript by Namenu
-    A part of the script is from " Hive Auto Queue" Made by Rosie ( Thx to her ) 
-]]
-
-local font = gui.font()
-ImportedLib = importLib("fileUtility.lua")
-
-positionX = 558
-positionY = 316
-sizeX = 80
-sizeY = 15
-scale = 1
-
-local file = io.open("WinStreak.txt")
-
-if file then
-    winstreak = "Gamemode Not Selected"
-    gamemode = "Null"
-    team = "Null"
-	file:close()
-else
-	local file = io.open("WinStreak.txt", "w")
-	file:write("0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0")
-	file:close()
-    winstreak = 0
-    gamemode = "Null"
-    team = "Null"
-end
-xboxname = player.name()
-client.settings.addAir(10)
-textcolor = client.settings.addNamelessColor("Text Color", { 255, 255, 255, 255 })
-bgcolor = client.settings.addNamelessColor("Background Color", { 0, 0, 0, 128 })
-client.settings.addAir(10)
-xoffset = 0
-client.settings.addInt("Text X offset", "xoffset", -5, 5)
-yoffset = 0
-client.settings.addInt("Text Y offset", "yoffset", -5, 5)
-client.settings.addAir(30)
 
 function render(dt)
-    text = "Winstreak: " .. tostring(winstreak)
-    width = font.width(text) + 7 
-    height = font.height + 7
-    sizeX = width
-    sizeY = height
-    gfx.color(bgcolor.value.r, bgcolor.value.g, bgcolor.value.b, bgcolor.value.a)
-    gfx.rect(0, 0, width, height)
-    gfx.color(textcolor.value.r, textcolor.value.g, textcolor.value.b, textcolor.value.a)
-    gfx.text(width / 2 - width / 2 + 4 + xoffset, 11 - height / 2 + yoffset, text, 1)
-end
+     text = "Winstreak: " .. tostring(winstreak)
+     width = font.width(text) + 7 
+     height = font.height + 7
+     sizeX = width
+     sizeY = height
+     gfx.color(bgcolor.value.r, bgcolor.value.g, bgcolor.value.b, bgcolor.value.a)
+     gfx.rect(0, 0, width, height)
+     gfx.color(textcolor.value.r, textcolor.value.g, textcolor.value.b, textcolor.value.a)
+     gfx.text(width / 2 - width / 2 + 4 + xoffset, 11 - height / 2 + yoffset, text, 1)
+    end
 function gmSelector(msg)
-    msg = msg
-    if string.match(msg, "Finding you a game of BED.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 1 then
-                    winstreak = tonumber(line)
-                    break
-                end
+    local file = io.open("WinStreak.txt", "r")
+    if file then
+        -- Variables pour la ligne à lire
+        local lineNumber = 0
+        local newWinstreak = nil  -- Nouvelle valeur de winstreak
+        for line in file:lines() do
+            lineNumber = lineNumber + 1
+            -- Vérifier quel mode de jeu est sélectionné
+            if string.match(msg, "Finding you a game of BED.*") and lineNumber == 1 then
+                newWinstreak = tonumber(line)
+                gm = "bed"
+                NumberLine = 1
+            elseif string.match(msg, "Finding you a game of SKY.*") and lineNumber == 2 then
+                newWinstreak = tonumber(line)
+                gm = "sky"
+                NumberLine = 2
+            elseif string.match(msg, "Finding you a game of Murder Mystery") and lineNumber == 3 then
+                newWinstreak = tonumber(line)
+                gm = "mm"
+                NumberLine = 3
+            elseif string.match(msg, "Finding you a game of Just Build.*") and lineNumber == 4 then
+                newWinstreak = tonumber(line)
+                gm = "jb"
+                NumberLine = 4
+            elseif string.match(msg, "Finding you a game of Capture The Flag.*") and lineNumber == 5 then
+                newWinstreak = tonumber(line)
+                gm = "ctf"
+                NumberLine = 5
+            elseif string.match(msg, "Finding you a game of Hide and Seek.*") and lineNumber == 6 then
+                newWinstreak = tonumber(line)
+                gm = "hs"
+                NumberLine = 6
+            elseif string.match(msg, "Finding you a game of DeathRun.*") and lineNumber == 7 then
+                newWinstreak = tonumber(line)
+                gm = "dr"
+                NumberLine = 7
+            elseif string.match(msg, "Finding you a game of Gravity.*") and lineNumber == 8 then
+                newWinstreak = tonumber(line)
+                gm = "gr"
+                NumberLine = 8
+            elseif string.match(msg, "Finding you a game of Block Party.*") and lineNumber == 9 then
+                newWinstreak = tonumber(line)
+                dead = "no"
+                gm = "bp"
+                NumberLine = 9
+            elseif string.match(msg, "Finding you a game of Survival Game.*") and lineNumber == 10 then
+                newWinstreak = tonumber(line)
+                gm = "sg"
+                NumberLine = 10
+            elseif string.match(msg, "Finding you a game of The Bridge.*") and lineNumber == 11 then
+                newWinstreak = tonumber(line)
+                gm = "tb"
+                NumberLine = 11
+            elseif string.match(msg, "Finding you a game of Ground Wars.*") and lineNumber == 12 then
+                newWinstreak = tonumber(line)
+                gm = "gw"
+                NumberLine = 12
+            elseif string.match(msg, "Finding you a game of Block Drop.*") and lineNumber == 13 then
+                newWinstreak = tonumber(line)
+                gm = "bd"
+                dead = "no"
+                NumberLine = 13
             end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of SKY.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 2 then
-                    winstreak = tonumber(line)
-                    break
-                end
+            
+            if newWinstreak then
+                winstreak = newWinstreak
+                break
             end
-            file:close()
         end
-    elseif string.match(msg, "Finding you a game of Murder Mystery") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 3 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of Just Build.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 4 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of Capture The Flag.*") then 
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 5 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of Hide and Seek.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 6 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of DeathRun.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 7 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of Gravity.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 8 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of Block Party.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 9 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of Survival Game.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 10 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of The Bridge.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1s
-                if lineNumber == 11 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of Ground Wars.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 12 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
-    elseif string.match(msg, "Finding you a game of Block Drop.*") then
-        local file = io.open("WinStreak.txt", "r")
-        if file then
-            local lineNumber = 0
-            for line in file:lines() do
-                lineNumber = lineNumber + 1
-                if lineNumber == 13 then
-                    winstreak = tonumber(line)
-                    break
-                end
-            end
-            file:close()
-        end
+        file:close()
     end
 end
-function cleanMessage(message)
-    return message:gsub("§[0-9a-fk-or]", "")  -- Remove all § codes
-end
-
-function WS(message, player)
-    local cleanedMessage = cleanMessage(message)
-    local team = nil  -- Ensure team is initialized as nil
-
-    -- Detect team color from message and assign to team variable
-    if string.match(message, "§rYou are on the ") then
-        local teamcolor = message:sub(30, 30)
-        
-        -- Assign team based on color
+function onChat(message, username, type)
+    --Skywars
+    if string.match(message, "§rYou are on the ") and type == 2 then
+        teamcolor = message:sub(30, 30)
         if teamcolor == "e" then
-            team = "§eYellow"
+            team = "Yellow"
         elseif teamcolor == "a" then
-            team = "§aLime"
+            team = "Lime"
         elseif teamcolor == "c" then
-            team = "§cRed"
+            team = "Red"
         elseif teamcolor == "9" then
-            team = "§9Blue"
+            team = "Blue"
         elseif teamcolor == "6" then
-            team = "§6Gold"
+            team = "Gold"
         elseif teamcolor == "d" then
-            team = "§dMagenta"
+            team = "Magenta"
         elseif teamcolor == "b" then
-            team = "§bAqua"
+            team = "Aqua"
         elseif teamcolor == "7" then
-            team = "§7Gray"
+            team = "Gray"
         elseif teamcolor == "5" then
-            team = "§5Purple"
+            team = "Purple"
         elseif teamcolor == "2" then
-            team = "§2Green"
+            team = "Green"
         elseif teamcolor == "8" then
-            team = "§8Dark Gray"
+            team = "Dark Gray"
         elseif teamcolor == "3" then
-            team = "§3Cyan"
+            team = "Cyan"
         else
             team = "Unknown"
         end
     end
-
-    -- If team is still nil (i.e., the message didn't match the team pattern), we return early
-    if team == nil then
+    if string.match(message, team .. " Team §7has been §cELIMINATED§7!") then
+        -- If the player has lost
+        if string.match(message, player.name()) then
+            -- Reset the winstreak to 0 on loss
+            winstreak = 0
+            updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+            return
+        end
+    end
+    if string.match(message, team .. " was ELIMINATED!") then
+        winstreak = 0
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
         return
     end
 
-    -- WinStreakModifier function to process win streak updates
-    local function WinStreakModifier(message)
-        local winstreak = 0  -- Initialize winstreak to 0
-
-        -- Check for "eliminated" messages (i.e., reset streak when eliminated)
-        if string.match(message, team .. " Team §7has been §cELIMINATED§7!") then
-            if string.match(message, player.name()) and string.match(message, " did an oopsie!") then
-                winstreak = 0
-                return winstreak
-            else
-                winstreak = 0
-                return winstreak
-            end
-        end
-        if string.match(message, team .. " was ELIMINATED!") then
-            winstreak = 0
-            return winstreak
-        end
-
-        -- Check for "winner" messages (i.e., increment streak when winning)
-        if string.match(message, team .. " Team are the WINNERS!") then
+    -- Case for winning message for team
+    if string.match(message, team .. " Team are the WINNERS!") then
+        if string.match(message, player.name()) then
+            -- Increase the winstreak if the player is part of the winning team
             winstreak = winstreak + 1
-            return winstreak
+            updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+            return
         end
-        if string.match(message, team .. " Team is the WINNER!") then
-            winstreak = winstreak + 1
-            return winstreak
-        end
-        -- Reset streak when finishing a game without winning
-        if string.match(message, "§a§l» §r§eYou finished in §f") then
-            winstreak = 0
-            return winstreak
-        end
-
-        -- Add more conditions for other specific game modes (e.g., Murder Mystery, Block Party, etc.)
-        -- Example: Murder Mystery
-        if string.match(message, "§c§l» §r§cYou died! §7§oYou will be taken to the Graveyard shortly...") then
-            winstreak = 0
-            return winstreak
-        end
-        if string.match(message, "§b§l» §r§aYou survived!") then
-            winstreak = winstreak + 1
-            return winstreak
-        end
-
-        -- Block Party
-        if message:match("§crock 'n' rolled into the void") or
-           message:match("§ctook the L!§8") or
-           message:match("§cain't stayin' alive") or
-           message:match("§chas two left feet") or
-           message:match("§cfell off the map") then
-            if message:match(player.name()) then
-                winstreak = 0
-                return winstreak
-            end
-        end
-
-        -- Gravity (specific game logic)
-        if message:match("§a§l» §r§eYou finished all maps and came in") then
-            winstreak = winstreak + 1
-            return winstreak
-        end
-
-        -- Block Drop
-        if string.match(message, "§c§l» §r§cYou died! §7Stick around or play another round.") then
-            winstreak = 0
-            return winstreak
-        else 
-            winstreak = winstreak + 1
-        end
-        
-        return winstreak
+    end
+    if string.match(message, team .. " Team is the WINNER!") then
+        return
     end
 
-    local winstreak = WinStreakModifier(message)
-
- -- Reuse gmSelector's game mode detection logic
- local function detectGameMode(msg)
-    if string.match(msg, "Finding you a game of BED.*") then
-        return "BED"
-    elseif string.match(msg, "Finding you a game of SKY.*") then
-        return "SKY"
-    elseif string.match(msg, "Finding you a game of Murder Mystery") then
-        return "Murder Mystery"
-    elseif string.match(msg, "Finding you a game of Just Build.*") then
-        return "Just Build"
-    elseif string.match(msg, "Finding you a game of Capture The Flag.*") then
-        return "Capture The Flag"
-    elseif string.match(msg, "Finding you a game of Hide and Seek.*") then
-        return "Hide and Seek"
-    elseif string.match(msg, "Finding you a game of DeathRun.*") then
-        return "DeathRun"
-    elseif string.match(msg, "Finding you a game of Gravity.*") then
-        return "Gravity"
-    elseif string.match(msg, "Finding you a game of Block Party.*") then
-        return "Block Party"
-    elseif string.match(msg, "Finding you a game of Survival Game.*") then
-        return "Survival Game"
-    elseif string.match(msg, "Finding you a game of The Bridge.*") then
-        return "The Bridge"
-    elseif string.match(msg, "Finding you a game of Ground Wars.*") then
-        return "Ground Wars"
-    elseif string.match(msg, "Finding you a game of Block Drop.*") then
-        return "Block Drop"
-    end
-    return nil  -- If no game mode found
-end
-
--- Detect the game mode from the message
-local gameMode = detectGameMode(message)
-    -- Trim spaces and check for hidden characters
-    local trimmedMessage = message:gsub("%s+", "")  -- Remove all whitespace characters
-    print("Received message in WS: " .. message)  -- Debugging original message
-    print("Trimmed message in WS: " .. trimmedMessage)  -- Debugging trimmed message
-
-    -- Define game modes mapping with "..." at the end for flexibility
-    local gameModes = {
-        ["BED"] = 1,
-        ["SKY"] = 2,
-        ["Murder Mystery"] = 3,
-        ["Just Build"] = 4,
-        ["Capture The Flag"] = 5,
-        ["Hide and Seek"] = 6,
-        ["DeathRun"] = 7,
-        ["Gravity"] = 8,
-        ["Block Party"] = 9,
-        ["Survival Game"] = 10,
-        ["The Bridge"] = 11,
-        ["Ground Wars"] = 12,
-        ["Block Drop"] = 13
-    }
-
-    -- Loop through all game modes to detect the correct one
-    for gameMode, lineIndex in pairs(gameModes) do
-        -- Match game mode with flexibility for "..." at the end
-        if string.match(trimmedMessage, "Finding you a game of " .. gameMode .. ".*") then
-            print("Game mode detected in WS: " .. gameMode)  -- Print detected game mode
-            -- Call the update function for the detected game mode
-            updateWinstreakForGame(lineIndex, winstreak)
-            break
-        else
-            -- If not matched, print debug
-            print("No match for game mode: " .. gameMode)
+    -- Block Party
+    if string.match(message, "§crock 'n' rolled into the void") or
+       string.match(message, "§ctook the L!§8") or
+       string.match(message, "§cain't stayin' alive") or
+       string.match(message, "§cfell off the map") then
+        if string.match(message, player.name()) then
+            winstreak = 0
+            updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+            dead = "yes"
+            return
         end
+    end
+    if string.match(message, "Game OVER!") and dead == "no" and gm == "bp" then
+        winstreak = winstreak + 1
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+        return
+    end
+
+    -- Gravity
+    if string.match(message, "§a§l» §r§eYou finished all maps and came in") then
+        winstreak = winstreak + 1
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+        return
+    end
+    if string.match(message, "Game OVER!") and gm == "gr" then
+        winstreak = 0
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+        return
+    end
+
+    -- Block Drop
+    if string.match(message, "§c§l» §r§cYou died! §7Stick around or play another round.") then
+        winstreak = 0
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+        return
+    end
+    if string.match(message, "Game OVER!") and dead == "no" and gm == "bd" then
+        winstreak = winstreak + 1
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+        return
+    end
+
+    -- DeathRun
+    if string.match(message, "You finished in") then
+        winstreak = winstreak + 1
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+        return
+    end
+    if string.match(message, "§c§l» §r§cYou died!") then
+        print('§askill issue')
+    end
+    if string.match(message, "Game OVER!") and gm == "dr" then
+        winstreak = 0
+        updateWinstreakInFile(NumberLine, winstreak)
+        print('§5Youre not very good at this arent you?')
+        return 
+    end
+
+    -- Murder Mystery
+    if string.match(message, "§c§l» §r§cYou died! §7§oYou will be taken to the Graveyard shortly...") then
+        winstreak = 0
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+        return
+    end
+    if string.match(message, "§b§l» §r§aYou survived!") then
+        winstreak = winstreak + 1
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update in the file
+        return
+    end
+    if string.match(message, "Elimimate all players") then
+        role = "Murder"
+    end
+    if string.match(message, "Try to survive.") then
+        role = "Survivor"
+    end
+    if string.match(message, "Eliminate the murderer using your Zapper") then
+        role = "Sheriff"
+    end
+    if string.match(message, "Murder won this round.") or string.match(message, "§cMurderer §7won this round.") and role == "Murder " then
+        winstreak = winstreak + 1
+        updateWinstreakInFile(NumberLine, winstreak)
+        print("wow you're doing great")
+        return
     end
 end
 
-
-function updateWinstreakForGame(lineIndex, winstreak)
-    print("Attempting to update WinStreak.txt for line " .. lineIndex .. " with winstreak: " .. winstreak)
-
-    -- Open the file to read its contents
+function updateWinstreakInFile(lineNumber, newWinstreak)
     local file = io.open("WinStreak.txt", "r")
     if file then
         local lines = {}
-        -- Read all lines into a table
+        local lineCount = 0
         for line in file:lines() do
-            table.insert(lines, line)
+            lineCount = lineCount + 1
+            if lineCount == lineNumber then
+                table.insert(lines, tostring(newWinstreak))  
+            else
+                table.insert(lines, line)
+            end
         end
         file:close()
 
-        -- Check the number of lines read and debug
-        print("Read " .. #lines .. " lines from WinStreak.txt")
-
-        -- Update the line with the new winstreak value (or add a new one if it doesn't exist)
-        if lineIndex <= #lines then
-            -- Update the specific line with the new winstreak value
-            print("Updating line " .. lineIndex .. " with winstreak: " .. winstreak)
-            lines[lineIndex] = tostring(winstreak)
-        else
-            -- If the line does not exist, we add empty lines and then insert the winstreak
-            print("Adding lines to match the requested line index: " .. lineIndex)
-            for i = #lines + 1, lineIndex - 1 do
-                table.insert(lines, "")
-            end
-            table.insert(lines, tostring(winstreak))
-        end
-
-        -- Write the updated content back to the file
+        
         local file = io.open("WinStreak.txt", "w")
         for _, line in ipairs(lines) do
             file:write(line .. "\n")
         end
         file:close()
-
-        -- Debug message to indicate success
-        print("Successfully updated WinStreak.txt.")
-    else
-        print("Error opening WinStreak.txt file for reading.")
     end
 end
-function onChatMessageAdded(msg)
-    -- Call gmSelector
-    gmSelector(msg)
+ function onChatMessageAdded(msg)
+     -- Call gmSelector
+     gmSelector(msg)
+ 
+     -- Call WS
+     onChat(msg)
+ end
 
-    -- Call WS
-    WS(msg)
+ function setstreak(arg)
+    -- Ensure that the argument is a valid number (in case you want to prevent invalid input)
+    if type(arg) == "number" then
+        winstreak = arg  -- Set winstreak to the provided argument
+        updateWinstreakInFile(NumberLine, winstreak)  -- Update the winstreak in the file
+    else
+        print("Error: Invalid argument. Please provide a valid number for the winstreak.")
+    end
 end
-
--- Listening to the ChatMessageAdded event
-event.listen("ChatMessageAdded", onChatMessageAdded)
+registerCommand("setstreak", function(arg)
+    local streak = tonumber(arg)
+    
+    if streak then
+        setstreak(streak)
+        print("Winstreak changed to " .. streak)
+    else
+        if arg == nil or arg == "" then
+            print("§cPlease provide a valid number for the winstreak!")
+        else
+            print("§c" .. arg .. " is not a valid number!")
+        end
+    end
+end)
+registerCommand("addstreak", function()
+    -- Get the current winstreak (assuming you have a global variable `winstreak` defined)
+    winstreak = winstreak + 1  -- Increment the winstreak by 1
+    
+    -- Update the winstreak in the file
+    updateWinstreakInFile(NumberLine, winstreak)
+    
+    -- Print the updated winstreak to the console
+    print("Winstreak modified. New winstreak: " .. winstreak)
+end)
+ event.listen("ChatMessageAdded", onChatMessageAdded)
+ 
